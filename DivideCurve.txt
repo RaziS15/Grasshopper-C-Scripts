@@ -1,0 +1,81 @@
+// Grasshopper Script Instance
+#region Usings
+using System;
+using System.Linq;
+using System.Collections;
+using System.Collections.Generic;
+using System.Drawing;
+
+using Rhino;
+using Rhino.Geometry;
+
+using Grasshopper;
+using Grasshopper.Kernel;
+using Grasshopper.Kernel.Data;
+using Grasshopper.Kernel.Types;
+#endregion
+
+public class Script_Instance : GH_ScriptInstance
+{
+    #region Notes
+    /* 
+      Members:
+        RhinoDoc RhinoDocument
+        GH_Document GrasshopperDocument
+        IGH_Component Component
+        int Iteration
+
+      Methods (Virtual & overridable):
+        Print(string text)
+        Print(string format, params object[] args)
+        Reflect(object obj)
+        Reflect(object obj, string method_name)
+    */
+    #endregion
+
+    private void RunScript(
+		Curve inputCurve,
+		int divisions,
+		ref object A,
+		ref object B)
+{
+    // Input validation
+    if (inputCurve == null)
+    {
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Input curve is null");
+        return;
+    }
+    
+    if (divisions < 2)
+    {
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Divisions must be at least 2");
+        divisions = Math.Max(2, divisions);
+    }
+    
+    // Create empty lists to store our results
+    List<Point3d> divisionPoints = new List<Point3d>();
+    List<Line> segments = new List<Line>();
+    
+    // Divide the curve
+    double curveLength = inputCurve.GetLength();
+    double segmentLength = curveLength / divisions;
+    
+    for (int i = 0; i <= divisions - 1; i++)
+    {
+        double parameter = i * (1.0 / divisions);
+        inputCurve.DivideByCount(divisions, true, out Point3d[] points);
+        divisionPoints.Add(points[i]);
+        
+        // Create segments between the points
+        if (i > 0)
+        {
+            Line segment = new Line(points[i-1], points[i]);
+            segments.Add(segment);
+        }
+    }
+    
+    // Assign the outputs
+    A = divisionPoints;
+    B = segments;
+}
+}
