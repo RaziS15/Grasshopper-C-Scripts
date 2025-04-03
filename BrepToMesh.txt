@@ -1,0 +1,63 @@
+// Grasshopper Script Instance
+#region Usings
+using System;
+using System.Linq;
+using System.Collections;
+using System.Collections.Generic;
+using System.Drawing;
+
+using Rhino;
+using Rhino.Geometry;
+
+using Grasshopper;
+using Grasshopper.Kernel;
+using Grasshopper.Kernel.Data;
+using Grasshopper.Kernel.Types;
+#endregion
+
+public class Script_Instance : GH_ScriptInstance
+{
+    #region Notes
+    /* 
+      Members:
+        RhinoDoc RhinoDocument
+        GH_Document GrasshopperDocument
+        IGH_Component Component
+        int Iteration
+
+      Methods (Virtual & overridable):
+        Print(string text)
+        Print(string format, params object[] args)
+        Reflect(object obj)
+        Reflect(object obj, string method_name)
+    */
+    #endregion
+
+    private void RunScript(Brep input, double meshSize, ref object a)
+    {
+        //Initialize output mesh
+        Mesh outputMesh = null;
+
+        //Error Msg for input
+        if (input == null)
+        {
+            AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No input brep");
+        }
+
+        //Setting up Mesh Parameters
+        MeshingParameters mp = new MeshingParameters();
+        mp.MinimumEdgeLength= meshSize;
+
+        //Create Mesh from Brep
+
+        Mesh[] meshes = Mesh.CreateFromBrep(input,mp);
+
+        outputMesh = new Mesh();
+        foreach (Mesh m in meshes)
+        {
+            outputMesh.Append(m);
+        }
+
+        a = outputMesh;
+    }
+}
